@@ -9,3 +9,6 @@ flask
 flask-cors
 python-dotenv
 google-genai
+pdfplumber
+PyPDF2
+python-docx
