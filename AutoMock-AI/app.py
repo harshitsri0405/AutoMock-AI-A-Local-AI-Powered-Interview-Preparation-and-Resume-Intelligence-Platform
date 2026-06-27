@@ -225,11 +225,18 @@ if st.session_state.app_mode == "home":
     
     if st.button("Launch Technical Test ⚡", use_container_width=True):
         if interview_topic != "":
-            # 🎯 STAGE-TEST DESIGNATION: Questions are sampled strictly from unseen test data matrix records
+            # 1. पहले Test Dataset (dataset_part2.csv) में ढूँढें
             all_topic_qs = df_test[df_test['skill'].str.lower().str.strip() == interview_topic]
             if all_topic_qs.empty:
                 all_topic_qs = df_test[df_test['skill'].str.contains(interview_topic, na=False)]
             
+            # 2. FIX/FALLBACK: अगर Test Dataset में नहीं मिला, तो Train Dataset (dataset_part1.csv) से उठाएं
+            if all_topic_qs.empty:
+                all_topic_qs = df_train[df_train['skill'].str.lower().str.strip() == interview_topic]
+                if all_topic_qs.empty:
+                    all_topic_qs = df_train[df_train['skill'].str.contains(interview_topic, na=False)]
+            
+            # 3. अगर सवाल मिल गए तो इंटरव्यू शुरू करें
             if not all_topic_qs.empty:
                 filtered_qs = all_topic_qs.sample(n=min(5, len(all_topic_qs)))
                 questions_package = []
@@ -247,6 +254,9 @@ if st.session_state.app_mode == "home":
                 st.session_state.start_time = time.time()
                 st.session_state.app_mode = "interview_topic"
                 st.rerun()
+            else:
+                # 4. अगर दोनों फ़ाइलों में कोई सवाल न मिले तो यूजर को चेतावनी दिखाएं
+                st.warning(f"⚠️ Selected domain '{interview_topic.upper()}' के लिए datasets में कोई सवाल नहीं मिले। कृपया दूसरा डोमेन चुनें।")
 
     st.markdown("<div class='neon-hr'></div>", unsafe_allow_html=True)
     st.markdown("<h3 style='color: #e2e8f0; margin-bottom: 15px;'>Adaptive Candidate Profile Solutions</h3>", unsafe_allow_html=True)
